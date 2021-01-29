@@ -21,7 +21,7 @@ class SumisneHolosuvanniaController < ApplicationController
     if params[:month] == "full"
        vote =  Division.all.size
        @vote =  [{faction: params[:party], date: "full", vote_aye: vote}]
-       @vote += PartyFriend.joins(:mpss).where(party: params[:party]).order(count: :desc).map{|v| {faction: v.friend_party, date: v.date_party_friend.strftime('%Y-%m'), vote_aye: v.count}}
+       @vote += PartyFriend.joins(:mpss).where(party: params[:party]).order(count: :desc).uniq.map{|v| {faction: v.friend_party, date: v.date_party_friend.strftime('%Y-%m'), vote_aye: v.count}}
        p @vote
     else
       date = Date.strptime(params[:month],'%Y-%m')
@@ -30,7 +30,7 @@ class SumisneHolosuvanniaController < ApplicationController
       date_max = date + 1.month
       vote = Division.where("date >= ? AND date < ?", date_min, date_max).size
       @vote =  [{faction: params[:party], date: params[:month], vote_aye: vote}]
-      @vote += PartyFriend.joins(:mpss).where(party: params[:party], date_party_friend: Date.strptime(params[:month], '%Y-%m')).order(count: :desc).map{|v| {faction: v.friend_party, date: v.date_party_friend.strftime('%Y-%m'), vote_aye: v.count}}
+      @vote += PartyFriend.joins(:mpss).where(party: params[:party], date_party_friend: Date.strptime(params[:month], '%Y-%m')).order(count: :desc).uniq.map{|v| {faction: v.friend_party, date: v.date_party_friend.strftime('%Y-%m'), vote_aye: v.count}}
     end
     vote_party = @vote.map{|p| p[:faction]}
     party_not_voted = party.find_all{|v| vote_party.include?(v) == false }
